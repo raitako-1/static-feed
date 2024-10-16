@@ -13,6 +13,7 @@ export type Config = {
   hostname: string
   sqliteLocation: string
   subscriptionEndpoint: string
+  useJetstream: boolean
   serviceDid: string
   publisherDid: string
   subscriptionReconnectDelay: number

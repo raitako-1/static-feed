@@ -12,7 +12,8 @@ const run = async () => {
     sqliteLocation: maybeStr(process.env.FEEDGEN_SQLITE_LOCATION) ?? ':memory:',
     subscriptionEndpoint:
       maybeStr(process.env.FEEDGEN_SUBSCRIPTION_ENDPOINT) ??
-      'wss://bsky.network',
+      'wss://jetstream1.us-east.bsky.network',
+    useJetstream: maybeBoolean(process.env.USE_JETSTREAM) ?? true,
     publisherDid:
       maybeStr(process.env.FEEDGEN_PUBLISHER_DID) ?? 'did:example:alice',
     subscriptionReconnectDelay:
@@ -36,6 +37,13 @@ const maybeInt = (val?: string) => {
   const int = parseInt(val, 10)
   if (isNaN(int)) return undefined
   return int
+}
+
+const maybeBoolean = (val?: string) => {
+  if (!val) return undefined
+  if (val === 'true') return true
+  if (val === 'false') return false
+  return undefined
 }
 
 run()

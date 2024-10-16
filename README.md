@@ -28,7 +28,7 @@ We've set up this simple server with SQLite to store and query data. Feel free t
 
 Next, you will need to do two things:
 
-1. Implement indexing logic in `src/subscription.ts`. 
+1. Implement indexing logic in `src/subscription.ts` or `src/jetstream-subscription.ts`. 
    
    This will subscribe to the repo subscription stream on startup, parse events and index them according to your provided logic.
 
@@ -131,7 +131,7 @@ We recommend, for instance, a compound cursor with a timestamp + a CID:
 
 How a feed generator fulfills the `getFeedSkeleton` request is completely at their discretion. At the simplest end, a Feed Generator could supply a "feed" that only contains some hardcoded posts.
 
-For most use cases, we recommend subscribing to the firehose at `com.atproto.sync.subscribeRepos`. This websocket will send you every record that is published on the network. Since Feed Generators do not need to provide hydrated posts, you can index as much or as little of the firehose as necessary.
+For most use cases, it seems better to use Jetstream, but there are cases where firehose is better.If you want to know more, click [here](https://github.com/bluesky-social/jetstream).
 
 Depending on your algorithm, you likely do not need to keep posts around for long. Unless your algorithm is intended to provide "posts you missed" or something similar, you can likely garbage collect any data that is older than 48 hours.
 

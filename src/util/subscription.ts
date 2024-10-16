@@ -32,6 +32,7 @@ export abstract class FirehoseSubscriptionBase {
         }
       },
     })
+    console.log(`Firehose: ${service}/${ids.ComAtprotoSyncSubscribeRepos}`)
   }
 
   abstract handleEvent(evt: RepoEvent): Promise<void>

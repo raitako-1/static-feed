@@ -7,6 +7,7 @@ import feedGeneration from './methods/feed-generation'
 import describeGenerator from './methods/describe-generator'
 import { createDb, Database, migrateToLatest } from './db'
 import { FirehoseSubscription } from './subscription'
+import { JetstreamFirehoseSubscription } from './jetstream-subscription'
 import { AppContext, Config } from './config'
 import wellKnown from './well-known'
 
@@ -14,13 +15,13 @@ export class FeedGenerator {
   public app: express.Application
   public server?: http.Server
   public db: Database
-  public firehose: FirehoseSubscription
+  public firehose: FirehoseSubscription | JetstreamFirehoseSubscription
   public cfg: Config
 
   constructor(
     app: express.Application,
     db: Database,
-    firehose: FirehoseSubscription,
+    firehose: FirehoseSubscription | JetstreamFirehoseSubscription,
     cfg: Config,
   ) {
     this.app = app
@@ -58,7 +59,13 @@ export class FeedGenerator {
     app.use(server.xrpc.router)
     app.use(wellKnown(ctx))
 
-    return new FeedGenerator(app, db, firehose, cfg)
+    if (cfg.useJetstream) {
+      const firehose = new JetstreamFirehoseSubscription(db, cfg.subscriptionEndpoint)
+      return new FeedGenerator(app, db, firehose, cfg)
+    } else {
+      const firehose = new FirehoseSubscription(db, cfg.subscriptionEndpoint)
+      return new FeedGenerator(app, db, firehose, cfg)
+    }
   }
 
   async start(): Promise<http.Server> {

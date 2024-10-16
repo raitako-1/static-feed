@@ -12,24 +12,18 @@ export class JetstreamFirehoseSubscription extends JetstreamFirehoseSubscription
     const ops = getJetstreamOpsByType(evt)
 
     if (!ops || !ops.posts?.length) return
+
+    // This logs the text of every post off the firehose.
+    // Just for fun :)
+    // Delete before actually using
+    for (const post of ops.posts) {
+      console.log(post.commit.record.text)
+    }
     
     const postsToCreate = ops.posts
       .filter((create) => {
-        var searchtext = create.commit.record.text
-        if (create.commit.record.embed?.images && Array.isArray(create.commit.record.embed.images)) {
-          for (const image of create.commit.record.embed.images) {
-            searchtext = searchtext + image.alt
-          }
-        }
-        if (typeof create.commit.record.reply === 'undefined') {
-          if (typeof create.commit.record.langs !== 'undefined' && create.commit.record.langs.includes('ja')) {
-            return true
-          }
-          if (searchtext.match(/^.*[ぁ-んァ-ヶｱ-ﾝﾞﾟー]+.*$/)) {
-            return true
-          }
-        }
-        return false
+        // only alf-related posts
+        return create.commit.record.text.toLowerCase().includes('alf')
       })
       .map((create) => {
         // map alf-related posts to a db row

@@ -63,19 +63,19 @@ export abstract class JetstreamFirehoseSubscriptionBase {
   }
 }
 export function isJetstreamCommit(v: unknown): v is JetstreamEvent {
-  return isObj(v) && hasProp(v, 'type') && v.type === 'com'
+  return isObj(v) && hasProp(v, 'kind') && v.kind === 'commit'
 }
 
 export interface JetstreamEvent {
   did: string
   time_us: number
-  type: string
+  kind: string
   commit: JetstreamCommit
 }
 
 export interface JetstreamCommit {
   rev: string
-  type: string
+  operation: string
   collection: string
   rkey: string
   record: JetstreamRecord
@@ -157,7 +157,7 @@ export const getJetstreamOpsByType = (evt: JetstreamEvent): OperationsByType => 
 
   if (
     evt?.commit?.collection === 'app.bsky.feed.post' &&
-    evt?.commit?.type === 'c' &&
+    evt?.commit?.operation === 'create' &&
     evt?.commit?.record
   ) {
     opsByType.posts.push(evt)

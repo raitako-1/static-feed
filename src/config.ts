@@ -12,8 +12,9 @@ export type Config = {
   listenhost: string
   hostname: string
   sqliteLocation: string
-  subscriptionEndpoint: string
-  useJetstream: boolean
+  subscriptionFirehoseEndpoint: string
+  subscriptionJetstreamEndpoint: string
+  subscriptionMode: string
   serviceDid: string
   publisherDid: string
   subscriptionReconnectDelay: number

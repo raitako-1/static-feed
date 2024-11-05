@@ -58,12 +58,14 @@ export class FeedGenerator {
     app.use(server.xrpc.router)
     app.use(wellKnown(ctx))
 
-    if (cfg.useJetstream) {
-      const firehose = new JetstreamFirehoseSubscription(db, cfg.subscriptionEndpoint)
+    if (cfg.subscriptionMode === 'Firehose') {
+      const firehose = new FirehoseSubscription(db, cfg.subscriptionFirehoseEndpoint)
+      return new FeedGenerator(app, db, firehose, cfg)
+    } else if (cfg.subscriptionMode === 'Jetstream') {
+      const firehose = new JetstreamFirehoseSubscription(db, cfg.subscriptionJetstreamEndpoint)
       return new FeedGenerator(app, db, firehose, cfg)
     } else {
-      const firehose = new FirehoseSubscription(db, cfg.subscriptionEndpoint)
-      return new FeedGenerator(app, db, firehose, cfg)
+      throw new Error('Invalid FEEDGEN_SUBSCRIPTION_MODE')
     }
   }
 

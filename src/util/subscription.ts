@@ -1,4 +1,5 @@
-import { Subscription } from '@atproto/xrpc-server'
+import { WebSocketKeepAlive } from './websocket-keepalive'
+import { Subscription as SubscriptionBase, ensureChunkIsMessage } from '@atproto/xrpc-server'
 import { cborToLexRecord, readCar } from '@atproto/repo'
 import { BlobRef } from '@atproto/lexicon'
 import { ids, lexicons } from '../lexicon/lexicons'
@@ -11,9 +12,10 @@ import {
   OutputSchema as RepoEvent,
   isCommit,
 } from '../lexicon/types/com/atproto/sync/subscribeRepos'
+import { handleEvent } from '../subscription'
 import { Database } from '../db'
 
-export abstract class FirehoseSubscriptionBase {
+export class FirehoseSubscription {
   public sub: Subscription<RepoEvent>
 
   constructor(public db: Database, public service: string) {
@@ -34,14 +36,17 @@ export abstract class FirehoseSubscriptionBase {
     })
   }
 
-  abstract handleEvent(evt: RepoEvent): Promise<void>
-
   async run(subscriptionReconnectDelay: number) {
     try {
       for await (const evt of this.sub) {
-        this.handleEvent(evt).catch((err) => {
+        try {
+          if (isCommit(evt)) {
+            const ops = await getOpsByType(evt)
+            await handleEvent(ops, this.db)
+          }
+        } catch (err) {
           console.error('repo subscription could not handle message', err)
-        })
+        }
         // update stored cursor every 20 events or so
         if (isCommit(evt) && evt.seq % 20 === 0) {
           await this.updateCursor(evt.seq)
@@ -74,7 +79,72 @@ export abstract class FirehoseSubscriptionBase {
   }
 }
 
-export const getOpsByType = async (evt: Commit): Promise<OperationsByType> => {
+class Subscription<T = unknown> extends SubscriptionBase {
+  async *[Symbol.asyncIterator](): AsyncGenerator<T> {
+    const ws = new WebSocketKeepAlive({
+      ...this.opts,
+      getUrl: async () => {
+        const params = (await this.opts.getParams?.()) ?? {}
+        const query = encodeQueryParams(params)
+        console.log(`Firehose: ${this.opts.service}/xrpc/${this.opts.method}?${query}`)
+        return `${this.opts.service}/xrpc/${this.opts.method}?${query}`
+      },
+    })
+    for await (const chunk of ws) {
+      const message = await ensureChunkIsMessage(chunk)
+      const t = message.header.t
+      const clone = message.body !== undefined ? { ...message.body } : undefined
+      if (clone !== undefined && t !== undefined) {
+        clone['$type'] = t.startsWith('#') ? this.opts.method + t : t
+      }
+      const result: any = this.opts.validate(clone)
+      if (result !== undefined) {
+        yield result
+      }
+    }
+  }
+}
+
+function encodeQueryParams(obj: Record<string, unknown>): string {
+  const params = new URLSearchParams()
+  Object.entries(obj).forEach(([key, value]) => {
+    const encoded = encodeQueryParam(value)
+    if (Array.isArray(encoded)) {
+      encoded.forEach((enc) => params.append(key, enc))
+    } else {
+      params.set(key, encoded)
+    }
+  })
+  return params.toString()
+}
+
+// Adapted from xrpc, but without any lex-specific knowledge
+function encodeQueryParam(value: unknown): string | string[] {
+  if (typeof value === 'string') {
+    return value
+  }
+  if (typeof value === 'number') {
+    return value.toString()
+  }
+  if (typeof value === 'boolean') {
+    return value ? 'true' : 'false'
+  }
+  if (typeof value === 'undefined') {
+    return ''
+  }
+  if (typeof value === 'object') {
+    if (value instanceof Date) {
+      return value.toISOString()
+    } else if (Array.isArray(value)) {
+      return value.flatMap(encodeQueryParam)
+    } else if (!value) {
+      return ''
+    }
+  }
+  throw new Error(`Cannot encode ${typeof value}s into query params`)
+}
+
+const getOpsByType = async (evt: Commit): Promise<OperationsByType> => {
   const car = await readCar(evt.blocks)
   const opsByType: OperationsByType = {
     posts: { creates: [], deletes: [] },
@@ -122,7 +192,7 @@ export const getOpsByType = async (evt: Commit): Promise<OperationsByType> => {
   return opsByType
 }
 
-type OperationsByType = {
+export type OperationsByType = {
   posts: Operations<PostRecord>
   reposts: Operations<RepostRecord>
   likes: Operations<LikeRecord>

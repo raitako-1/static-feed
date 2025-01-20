@@ -11,6 +11,9 @@ importers:
       '@atproto/api':
         specifier: ^0.13.28
         version: 0.13.28
+      '@atproto/common':
+        specifier: ^0.4.5
+        version: 0.4.6
       '@atproto/identity':
         specifier: ^0.4.4
         version: 0.4.5
@@ -41,6 +44,9 @@ importers:
       multiformats:
         specifier: ^9.9.0
         version: 9.9.0
+      ws:
+        specifier: ^8.18.0
+        version: 8.18.0
     devDependencies:
       '@atproto/lex-cli':
         specifier: ^0.5.4
@@ -54,6 +60,9 @@ importers:
       '@types/node':
         specifier: ^20.1.2
         version: 20.17.14
+      '@types/ws':
+        specifier: ^8.5.13
+        version: 8.5.13
       inquirer:
         specifier: ^12.0.1
         version: 12.3.2(@types/node@20.17.14)
@@ -307,6 +316,9 @@ packages:
 
   '@types/serve-static@1.15.7':
     resolution: {integrity: sha512-W8Ym+h8nhuRwaKPaDw34QUkwsGi6Rc4yYqvKFo5rm2FUEhCFbzVWrxXUxuKK8TASjWsysJY0nsmNCGhCOIsrOw==}
+
+  '@types/ws@8.5.13':
+    resolution: {integrity: sha512-osM/gWBTPKgHV8XkTunnegTRIsvF6owmf5w+JtAfOw472dptdm0dlGv4xCt6GwQRcC2XVOvvRE/0bAoQcL2QkA==}
 
   abort-controller@3.0.0:
     resolution: {integrity: sha512-h8lQ8tacZYnR3vNQTgibj+tODHI5/+l06Au2Pcriv/Gmet0eaj4TwWH41sO9wnHDiQsEj19q0drzdWdeAHtweg==}
@@ -1502,6 +1514,10 @@ snapshots:
       '@types/http-errors': 2.0.4
       '@types/node': 20.17.14
       '@types/send': 0.17.4
+
+  '@types/ws@8.5.13':
+    dependencies:
+      '@types/node': 20.17.14
 
   abort-controller@3.0.0:
     dependencies:

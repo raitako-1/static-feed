@@ -6,6 +6,7 @@
   "scripts": {
     "publishFeed": "ts-node scripts/publishFeedGen.ts",
     "unpublishFeed": "ts-node scripts/unpublishFeedGen.ts",
+    "codegen": "lex gen-server --yes ./src/lexicon ./lexicons/**/**/**/*.json",
     "dev": "ts-node ./src/index.ts",
     "clean": "rimraf ./dist",
     "build": "tsc -p ./",
@@ -29,6 +30,7 @@
     "multiformats": "^9.9.0"
   },
   "devDependencies": {
+    "@atproto/lex-cli": "^0.5.4",
     "@types/better-sqlite3": "^7.6.11",
     "@types/express": "^4.17.17",
     "@types/node": "^20.1.2",

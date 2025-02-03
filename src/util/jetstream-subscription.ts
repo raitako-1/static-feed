@@ -102,7 +102,7 @@ export interface JetstreamEventKindCommitOperationCreate {
 
 export interface JetstreamRecord {
   $type: string
-  [k: string]: any
+  [k: string]: unknown
 }
 
 export interface JetstreamEventKindCommitOperationUpdate {

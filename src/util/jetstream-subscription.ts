@@ -5,7 +5,8 @@
  */
 import { WebSocketKeepAlive } from './websocket-keepalive'
 import { Subscription } from '@atproto/xrpc-server'
-import { isObj, hasProp } from '@atproto/lexicon'
+import { isObj, hasProp, BlobRef } from '@atproto/lexicon'
+import { CID } from 'multiformats/cid'
 import { ids } from '../lexicon/lexicons'
 import { OperationsByType, isPost, isRepost, isLike, isFollow } from './subscription'
 import { handleEvent } from '../subscription'
@@ -100,7 +101,8 @@ export interface JetstreamEventKindCommitOperationCreate {
 }
 
 export interface JetstreamRecord {
-  [k: string]: unknown
+  $type: string
+  [k: string]: any
 }
 
 export interface JetstreamEventKindCommitOperationUpdate {
@@ -108,7 +110,8 @@ export interface JetstreamEventKindCommitOperationUpdate {
   operation: 'update'
   collection: string
   rkey: string
-  [k: string]: unknown
+  record: JetstreamRecord
+  cid: string
 }
 
 export interface JetstreamEventKindCommitOperationDelete {
@@ -216,6 +219,7 @@ const getJetstreamOpsByType = (evt: JetstreamEventKindCommit): OperationsByType 
   if (evt.commit.operation === 'update') {} // updates not supported yet
 
   if (evt.commit.operation === 'create') {
+    evt.commit.record = jsonBlobRefToBlobRef(evt.commit.record)
     if (evt.commit.collection === ids.AppBskyFeedPost && isPost(evt.commit.record)) {
       opsByType.posts.creates.push({ record: evt.commit.record, uri, cid: evt.commit.cid, author: evt.did })
     } else if (evt.commit.collection === ids.AppBskyFeedRepost && isRepost(evt.commit.record)) {
@@ -240,4 +244,22 @@ const getJetstreamOpsByType = (evt: JetstreamEventKindCommit): OperationsByType 
   }
 
   return opsByType
+}
+
+const jsonBlobRefToBlobRef = (obj: any): any => {
+  if (Array.isArray(obj)) {
+    return obj.map(jsonBlobRefToBlobRef)
+  }
+  if (obj && typeof obj === 'object') {
+    if (obj.$type === 'blob') {
+      const blob = obj as BlobRef
+      obj.ref = CID.parse(obj.ref.$link)
+      obj = BlobRef.fromJsonRef(obj) as BlobRef
+      return new BlobRef(blob.ref, blob.mimeType, blob.size, blob.original)
+    }
+    return Object.entries(obj).reduce((acc, [key, val]) => {
+      return Object.assign(acc, { [key]: jsonBlobRefToBlobRef(val) })
+    }, {} as Record<string, unknown>)
+  }
+  return obj
 }

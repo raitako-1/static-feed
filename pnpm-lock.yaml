@@ -27,8 +27,8 @@ importers:
         specifier: ^0.3.1
         version: 0.3.1
       '@atproto/xrpc-server':
-        specifier: ^0.7.7
-        version: 0.7.7
+        specifier: ^0.7.9
+        version: 0.7.9
       better-sqlite3:
         specifier: ^11.3.0
         version: 11.8.1
@@ -87,6 +87,9 @@ packages:
   '@atproto/common@0.4.6':
     resolution: {integrity: sha512-X33ZubLPrHLNur2Ln4tRP5TY0G0u/t9DyAeA5dgtTNGIXE3iJIlfiUSR0PW5s1iAvBbrrJK4BwaA2Pqsdl+RNw==}
 
+  '@atproto/common@0.4.7':
+    resolution: {integrity: sha512-C844ILV66sqHjQCJDb8tN/yZB2MBaLpZ1qptDT8zWRMx0uw7j/B6/EuN9R9a57Nj99Hhi93QkvQxOujURqpPeA==}
+
   '@atproto/crypto@0.4.3':
     resolution: {integrity: sha512-YSSUAvkx+ldpXw97NXZWfLx/prgh5YJ2K0BCw51JCJmXSRp6KhhwvOm4J+K/s5hwpssyuDCVTXknyS4PHwaK5g==}
 
@@ -106,11 +109,14 @@ packages:
   '@atproto/syntax@0.3.1':
     resolution: {integrity: sha512-fzW0Mg1QUOVCWUD3RgEsDt6d1OZ6DdFmbKcDdbzUfh0t4rhtRAC05KbZYmxuMPWDAiJ4BbbQ5dkAc/mNypMXkw==}
 
-  '@atproto/xrpc-server@0.7.7':
-    resolution: {integrity: sha512-hfA0OoGhWYPfrk+D6fumeRz+Jfcspan9JF0F50ok9brDjLySl5c8WAwpX47VTVzrvoInSgm4DEZ/STXWNcFxJg==}
+  '@atproto/xrpc-server@0.7.9':
+    resolution: {integrity: sha512-x6CqV6KycIUyZs+J4V+wujc3R98QIkVRU4KmbUgAJ9AtJuTDnOOEbUFrNVVes45UfjJw4ztg021R0M2y0aI3fQ==}
 
   '@atproto/xrpc@0.6.6':
     resolution: {integrity: sha512-umXEYVMo9/pyIBoKmIAIi64RXDW9tSXY+wqztlQ6I2GZtjLfNZqmAWU+wADk3SxUe54mvjxxGyA4TtyGtDMfhA==}
+
+  '@atproto/xrpc@0.6.7':
+    resolution: {integrity: sha512-pbzZIONIskyGKxxG3s2wB7rQ2W1xu3ycfeYhKwk/E/ippeJFVxcof64iSC7f22+7JSKUJcxBeZ1piBB82vLj7g==}
 
   '@cbor-extract/cbor-extract-darwin-arm64@2.2.0':
     resolution: {integrity: sha512-P7swiOAdF7aSi0H+tHtHtr6zrpF3aAq/W9FXx5HektRvLTM2O89xCyXF3pk7pLc7QpaY7AoaE8UowVf9QBdh3w==}
@@ -1207,6 +1213,15 @@ snapshots:
       multiformats: 9.9.0
       pino: 8.21.0
 
+  '@atproto/common@0.4.7':
+    dependencies:
+      '@atproto/common-web': 0.3.2
+      '@ipld/dag-cbor': 7.0.3
+      cbor-x: 1.6.0
+      iso-datestring-validator: 2.2.2
+      multiformats: 9.9.0
+      pino: 8.21.0
+
   '@atproto/crypto@0.4.3':
     dependencies:
       '@noble/curves': 1.8.1
@@ -1251,12 +1266,12 @@ snapshots:
 
   '@atproto/syntax@0.3.1': {}
 
-  '@atproto/xrpc-server@0.7.7':
+  '@atproto/xrpc-server@0.7.9':
     dependencies:
-      '@atproto/common': 0.4.6
+      '@atproto/common': 0.4.7
       '@atproto/crypto': 0.4.3
       '@atproto/lexicon': 0.4.5
-      '@atproto/xrpc': 0.6.6
+      '@atproto/xrpc': 0.6.7
       cbor-x: 1.6.0
       express: 4.21.2
       http-errors: 2.0.0
@@ -1271,6 +1286,11 @@ snapshots:
       - utf-8-validate
 
   '@atproto/xrpc@0.6.6':
+    dependencies:
+      '@atproto/lexicon': 0.4.5
+      zod: 3.24.1
+
+  '@atproto/xrpc@0.6.7':
     dependencies:
       '@atproto/lexicon': 0.4.5
       zod: 3.24.1

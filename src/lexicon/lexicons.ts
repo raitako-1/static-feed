@@ -277,6 +277,7 @@ export const schemaDict = {
             'lex:app.bsky.actor.defs#hiddenPostsPref',
             'lex:app.bsky.actor.defs#bskyAppStatePref',
             'lex:app.bsky.actor.defs#labelersPref',
+            'lex:app.bsky.actor.defs#postInteractionSettingsPref',
           ],
         },
       },
@@ -607,6 +608,39 @@ export const schemaDict = {
             format: 'datetime',
             description:
               'The date and time at which the NUX will expire and should be considered completed.',
+          },
+        },
+      },
+      postInteractionSettingsPref: {
+        type: 'object',
+        description:
+          'Default post interaction settings for the account. These values should be applied as default values when creating new posts. These refs should mirror the threadgate and postgate records exactly.',
+        required: [],
+        properties: {
+          threadgateAllowRules: {
+            description:
+              'Matches threadgate record. List of rules defining who can reply to this users posts. If value is an empty array, no one can reply. If value is undefined, anyone can reply.',
+            type: 'array',
+            maxLength: 5,
+            items: {
+              type: 'union',
+              refs: [
+                'lex:app.bsky.feed.threadgate#mentionRule',
+                'lex:app.bsky.feed.threadgate#followerRule',
+                'lex:app.bsky.feed.threadgate#followingRule',
+                'lex:app.bsky.feed.threadgate#listRule',
+              ],
+            },
+          },
+          postgateEmbeddingRules: {
+            description:
+              'Matches postgate record. List of rules defining who can embed this users posts. If value is an empty array or is undefined, no particular rules apply and anyone can embed.',
+            type: 'array',
+            maxLength: 5,
+            items: {
+              type: 'union',
+              refs: ['lex:app.bsky.feed.postgate#disableRule'],
+            },
           },
         },
       },
@@ -1935,6 +1969,58 @@ export const schemaDict = {
       },
     },
   },
+  AppBskyFeedPostgate: {
+    lexicon: 1,
+    id: 'app.bsky.feed.postgate',
+    defs: {
+      main: {
+        type: 'record',
+        key: 'tid',
+        description:
+          'Record defining interaction rules for a post. The record key (rkey) of the postgate record must match the record key of the post, and that record must be in the same repository.',
+        record: {
+          type: 'object',
+          required: ['post', 'createdAt'],
+          properties: {
+            createdAt: {
+              type: 'string',
+              format: 'datetime',
+            },
+            post: {
+              type: 'string',
+              format: 'at-uri',
+              description: 'Reference (AT-URI) to the post record.',
+            },
+            detachedEmbeddingUris: {
+              type: 'array',
+              maxLength: 50,
+              items: {
+                type: 'string',
+                format: 'at-uri',
+              },
+              description:
+                'List of AT-URIs embedding this post that the author has detached from.',
+            },
+            embeddingRules: {
+              description:
+                'List of rules defining who can embed this post. If value is an empty array or is undefined, no particular rules apply and anyone can embed.',
+              type: 'array',
+              maxLength: 5,
+              items: {
+                type: 'union',
+                refs: ['lex:app.bsky.feed.postgate#disableRule'],
+              },
+            },
+          },
+        },
+      },
+      disableRule: {
+        type: 'object',
+        description: 'Disables embedding of this post.',
+        properties: {},
+      },
+    },
+  },
   AppBskyFeedRepost: {
     lexicon: 1,
     id: 'app.bsky.feed.repost',
@@ -1956,6 +2042,83 @@ export const schemaDict = {
               type: 'string',
               format: 'datetime',
             },
+          },
+        },
+      },
+    },
+  },
+  AppBskyFeedThreadgate: {
+    lexicon: 1,
+    id: 'app.bsky.feed.threadgate',
+    defs: {
+      main: {
+        type: 'record',
+        key: 'tid',
+        description:
+          "Record defining interaction gating rules for a thread (aka, reply controls). The record key (rkey) of the threadgate record must match the record key of the thread's root post, and that record must be in the same repository.",
+        record: {
+          type: 'object',
+          required: ['post', 'createdAt'],
+          properties: {
+            post: {
+              type: 'string',
+              format: 'at-uri',
+              description: 'Reference (AT-URI) to the post record.',
+            },
+            allow: {
+              description:
+                'List of rules defining who can reply to this post. If value is an empty array, no one can reply. If value is undefined, anyone can reply.',
+              type: 'array',
+              maxLength: 5,
+              items: {
+                type: 'union',
+                refs: [
+                  'lex:app.bsky.feed.threadgate#mentionRule',
+                  'lex:app.bsky.feed.threadgate#followerRule',
+                  'lex:app.bsky.feed.threadgate#followingRule',
+                  'lex:app.bsky.feed.threadgate#listRule',
+                ],
+              },
+            },
+            createdAt: {
+              type: 'string',
+              format: 'datetime',
+            },
+            hiddenReplies: {
+              type: 'array',
+              maxLength: 50,
+              items: {
+                type: 'string',
+                format: 'at-uri',
+              },
+              description: 'List of hidden reply URIs.',
+            },
+          },
+        },
+      },
+      mentionRule: {
+        type: 'object',
+        description: 'Allow replies from actors mentioned in your post.',
+        properties: {},
+      },
+      followerRule: {
+        type: 'object',
+        description: 'Allow replies from actors who follow you.',
+        properties: {},
+      },
+      followingRule: {
+        type: 'object',
+        description: 'Allow replies from actors you follow.',
+        properties: {},
+      },
+      listRule: {
+        type: 'object',
+        description: 'Allow replies from actors on a list.',
+        required: ['list'],
+        properties: {
+          list: {
+            type: 'string',
+            format: 'at-uri',
           },
         },
       },
@@ -2992,7 +3155,9 @@ export const ids = {
   AppBskyFeedGetFeedSkeleton: 'app.bsky.feed.getFeedSkeleton',
   AppBskyFeedLike: 'app.bsky.feed.like',
   AppBskyFeedPost: 'app.bsky.feed.post',
+  AppBskyFeedPostgate: 'app.bsky.feed.postgate',
   AppBskyFeedRepost: 'app.bsky.feed.repost',
+  AppBskyFeedThreadgate: 'app.bsky.feed.threadgate',
   AppBskyGraphDefs: 'app.bsky.graph.defs',
   AppBskyGraphFollow: 'app.bsky.graph.follow',
   AppBskyLabelerDefs: 'app.bsky.labeler.defs',

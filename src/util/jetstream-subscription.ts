@@ -5,8 +5,8 @@
  */
 import { WebSocketKeepAlive } from './websocket-keepalive'
 import { Subscription } from '@atproto/xrpc-server'
-import { isObj, hasProp, BlobRef } from '@atproto/lexicon'
 import { CID } from 'multiformats/cid'
+import { isObj, hasProp, BlobRef } from '@atproto/lexicon'
 import { ids } from '../lexicon/lexicons'
 import { OperationsByType, isPost, isRepost, isLike, isFollow } from './subscription'
 import { handleEvent } from '../subscription'
@@ -82,7 +82,7 @@ function isJetstreamCommit(v: unknown): v is JetstreamEventKindCommit {
   return isObj(v) && hasProp(v, 'kind') && v.kind === 'commit'
 }
 
-export type JetstreamEvent = JetstreamEventKindCommit | JetstreamEventKindAccount | JetstreamEventKindIdentity
+export type JetstreamEvent = JetstreamEventKindCommit | JetstreamEventKindIdentity | JetstreamEventKindAccount
 
 export interface JetstreamEventKindCommit {
   did: string
@@ -121,18 +121,6 @@ export interface JetstreamEventKindCommitOperationDelete {
   rkey: string
 }
 
-export interface JetstreamEventKindAccount {
-  did: string
-  time_us: number
-  kind: 'account'
-  account: {
-    active: boolean
-    did: string
-    seq: number
-    time: string
-  }
-}
-
 export interface JetstreamEventKindIdentity {
   did: string
   time_us: number
@@ -141,6 +129,19 @@ export interface JetstreamEventKindIdentity {
     did: string
     handle: string
     seq: number
+    time: string
+  }
+}
+
+export interface JetstreamEventKindAccount {
+  did: string
+  time_us: number
+  kind: 'account'
+  account: {
+    active: boolean
+    did: string
+    seq: number
+    status?: string
     time: string
   }
 }
@@ -219,15 +220,16 @@ const getJetstreamOpsByType = (evt: JetstreamEventKindCommit): OperationsByType 
   if (evt.commit.operation === 'update') {} // updates not supported yet
 
   if (evt.commit.operation === 'create') {
-    evt.commit.record = jsonBlobRefToBlobRef(evt.commit.record)
-    if (evt.commit.collection === ids.AppBskyFeedPost && isPost(evt.commit.record)) {
-      opsByType.posts.creates.push({ record: evt.commit.record, uri, cid: evt.commit.cid, author: evt.did })
-    } else if (evt.commit.collection === ids.AppBskyFeedRepost && isRepost(evt.commit.record)) {
-      opsByType.reposts.creates.push({ record: evt.commit.record, uri, cid: evt.commit.cid, author: evt.did })
-    } else if (evt.commit.collection === ids.AppBskyFeedLike && isLike(evt.commit.record)) {
-      opsByType.likes.creates.push({ record: evt.commit.record, uri, cid: evt.commit.cid, author: evt.did })
-    } else if (evt.commit.collection === ids.AppBskyGraphFollow && isFollow(evt.commit.record)) {
-      opsByType.follows.creates.push({ record: evt.commit.record, uri, cid: evt.commit.cid, author: evt.did })
+    const record = jsonBlobRefToBlobRef(evt.commit.record)
+    const create = { uri, cid: evt.commit.cid, author: evt.did }
+    if (evt.commit.collection === ids.AppBskyFeedPost && isPost(record)) {
+      opsByType.posts.creates.push({ record, ...create })
+    } else if (evt.commit.collection === ids.AppBskyFeedRepost && isRepost(record)) {
+      opsByType.reposts.creates.push({ record, ...create })
+    } else if (evt.commit.collection === ids.AppBskyFeedLike && isLike(record)) {
+      opsByType.likes.creates.push({ record, ...create })
+    } else if (evt.commit.collection === ids.AppBskyGraphFollow && isFollow(record)) {
+      opsByType.follows.creates.push({ record, ...create })
     }
   }
 

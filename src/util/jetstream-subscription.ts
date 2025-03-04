@@ -6,7 +6,7 @@
 import { WebSocketKeepAlive } from './websocket-keepalive'
 import { Subscription } from '@atproto/xrpc-server'
 import { CID } from 'multiformats/cid'
-import { isObj, hasProp, BlobRef } from '@atproto/lexicon'
+import { isObj, BlobRef } from '@atproto/lexicon'
 import { ids } from '../lexicon/lexicons'
 import { OperationsByType, isPost, isRepost, isLike, isFollow } from './subscription'
 import { handleEvent } from '../subscription'
@@ -79,7 +79,7 @@ export class JetstreamFirehoseSubscription {
   }
 }
 function isJetstreamCommit(v: unknown): v is JetstreamEventKindCommit {
-  return isObj(v) && hasProp(v, 'kind') && v.kind === 'commit'
+  return isObj(v) && 'kind' in v && v.kind === 'commit'
 }
 
 export type JetstreamEvent = JetstreamEventKindCommit | JetstreamEventKindIdentity | JetstreamEventKindAccount

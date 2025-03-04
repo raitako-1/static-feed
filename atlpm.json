@@ -1,0 +1,14 @@
+{
+  "apiType": "TSServer",
+  "schemaDir": "./lexicons",
+  "outDir": "./src/lexicon",
+  "lexicons": {
+    "app.bsky.feed.getFeedSkeleton": "github",
+    "app.bsky.feed.post": "github",
+    "app.bsky.feed.repost": "github",
+    "app.bsky.feed.like": "github",
+    "app.bsky.graph.follow": "github",
+    "app.bsky.feed.describeFeedGenerator": "github",
+    "com.atproto.sync.subscribeRepos": "github"
+  }
+}

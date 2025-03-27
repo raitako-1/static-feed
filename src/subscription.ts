@@ -1,7 +1,7 @@
 import { OperationsByType } from './util/subscription'
 import { Database } from './db'
 
-export const handleEvent = async (ops: OperationsByType, db: Database): Promise<void> => {
+export const handleOperation = async (ops: OperationsByType, db: Database): Promise<void> => {
   // This logs the text of every post off the firehose.
   // Just for fun :)
   // Delete before actually using

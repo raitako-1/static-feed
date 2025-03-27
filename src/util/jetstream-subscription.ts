@@ -9,7 +9,7 @@ import { CID } from 'multiformats/cid'
 import { isObj, BlobRef } from '@atproto/lexicon'
 import { ids } from '../lexicon/lexicons'
 import { OperationsByType, isPost, isRepost, isLike, isFollow } from './subscription'
-import { handleEvent } from '../subscription'
+import { handleOperation } from '../subscription'
 import { Database } from '../db' // This is the standard DB class from bluesky-social/feed-generator
 
 export class JetstreamFirehoseSubscription {
@@ -40,7 +40,7 @@ export class JetstreamFirehoseSubscription {
         try {
           if (isJetstreamCommit(evt)) {
             const ops = getJetstreamOpsByType(evt)
-            await handleEvent(ops, this.db)
+            await handleOperation(ops, this.db)
           }
         } catch (err) {
           console.error('repo subscription could not handle message', err)

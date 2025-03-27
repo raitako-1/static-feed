@@ -12,7 +12,7 @@ import {
   OutputSchema as RepoEvent,
   isCommit,
 } from '../lexicon/types/com/atproto/sync/subscribeRepos'
-import { handleEvent } from '../subscription'
+import { handleOperation } from '../subscription'
 import { Database } from '../db'
 
 export class FirehoseSubscription {
@@ -42,7 +42,7 @@ export class FirehoseSubscription {
         try {
           if (isCommit(evt)) {
             const ops = await getOpsByType(evt)
-            await handleEvent(ops, this.db)
+            await handleOperation(ops, this.db)
           }
         } catch (err) {
           console.error('repo subscription could not handle message', err)

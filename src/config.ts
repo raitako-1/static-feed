@@ -1,4 +1,4 @@
-import { Database } from './db'
+import { type Database } from './db'
 import { DidResolver } from '@atproto/identity'
 
 export type AppContext = {
@@ -14,6 +14,7 @@ export type Config = {
   sqliteLocation: string
   subscriptionFirehoseEndpoint: string
   subscriptionJetstreamEndpoint: string
+  subscriptionTurbostreamEndpoint: string
   subscriptionMode: string
   serviceDid: string
   publisherDid: string

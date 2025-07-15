@@ -16,6 +16,9 @@ const run = async () => {
     subscriptionJetstreamEndpoint:
       maybeStr(process.env.FEEDGEN_SUBSCRIPTION_JETSTREAM_ENDPOINT) ??
       'wss://jetstream1.us-east.bsky.network',
+    subscriptionTurbostreamEndpoint:
+      maybeStr(process.env.FEEDGEN_SUBSCRIPTION_TURBOSTREAM_ENDPOINT) ??
+      'wss://api.graze.social/app/api/v1/turbostream/turbostream',
     subscriptionMode:
       maybeStr(process.env.FEEDGEN_SUBSCRIPTION_MODE) ?? 'Firehose',
     publisherDid:

@@ -1,6 +1,6 @@
 import SqliteDb from 'better-sqlite3'
 import { Kysely, Migrator, SqliteDialect } from 'kysely'
-import { DatabaseSchema } from './schema'
+import { type DatabaseSchema } from './schema'
 import { migrationProvider } from './migrations'
 
 export const createDb = (location: string): Database => {

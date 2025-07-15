@@ -1,7 +1,7 @@
-import { AppContext } from '../config'
+import { type AppContext } from '../config'
 import {
-  QueryParams,
-  OutputSchema as AlgoOutput,
+  type QueryParams,
+  type OutputSchema as AlgoOutput,
 } from '../lexicon/types/app/bsky/feed/getFeedSkeleton'
 import * as whatsAlf from './whats-alf'
 

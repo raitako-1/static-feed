@@ -2,18 +2,19 @@ import { WebSocketKeepAlive } from './websocket-keepalive'
 import { Subscription as SubscriptionBase, ensureChunkIsMessage } from '@atproto/xrpc-server'
 import { cborToLexRecord, readCar } from '@atproto/repo'
 import { BlobRef } from '@atproto/lexicon'
+import { type TurbostreamEventHydratedMetadata } from './turbostream-subscription'
 import { ids, lexicons } from '../lexicon/lexicons'
-import { Record as PostRecord } from '../lexicon/types/app/bsky/feed/post'
-import { Record as RepostRecord } from '../lexicon/types/app/bsky/feed/repost'
-import { Record as LikeRecord } from '../lexicon/types/app/bsky/feed/like'
-import { Record as FollowRecord } from '../lexicon/types/app/bsky/graph/follow'
+import { type Record as PostRecord } from '../lexicon/types/app/bsky/feed/post'
+import { type Record as RepostRecord } from '../lexicon/types/app/bsky/feed/repost'
+import { type Record as LikeRecord } from '../lexicon/types/app/bsky/feed/like'
+import { type Record as FollowRecord } from '../lexicon/types/app/bsky/graph/follow'
 import {
-  Commit,
-  OutputSchema as RepoEvent,
+  type Commit,
+  type OutputSchema as RepoEvent,
   isCommit,
 } from '../lexicon/types/com/atproto/sync/subscribeRepos'
 import { handleOperation } from '../subscription'
-import { Database } from '../db'
+import { type Database } from '../db'
 
 export class FirehoseSubscription {
   public sub: Subscription<RepoEvent>
@@ -209,6 +210,7 @@ type CreateOp<T> = {
   cid: string
   author: string
   record: T
+  hydrated_metadata?: TurbostreamEventHydratedMetadata
 }
 
 type DeleteOp = {

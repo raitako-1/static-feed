@@ -8,9 +8,10 @@ import { Subscription } from '@atproto/xrpc-server'
 import { CID } from 'multiformats/cid'
 import { isObj, BlobRef } from '@atproto/lexicon'
 import { ids } from '../lexicon/lexicons'
-import { OperationsByType, isPost, isRepost, isLike, isFollow } from './subscription'
+import { type OperationsByType, isPost, isRepost, isLike, isFollow } from './subscription'
+import { type TurbostreamEventHydratedMetadata } from './turbostream-subscription'
 import { handleOperation } from '../subscription'
-import { Database } from '../db' // This is the standard DB class from bluesky-social/feed-generator
+import { type Database } from '../db' // This is the standard DB class from bluesky-social/feed-generator
 
 export class JetstreamFirehoseSubscription {
   public sub: JetstreamSubscription<JetstreamEvent>
@@ -47,7 +48,7 @@ export class JetstreamFirehoseSubscription {
         }
         i++
         // update stored cursor every 20 events or so
-        if (isJetstreamCommit(evt) && i % 20 === 0) {
+        if (isJetstreamEvent(evt) && i % 20 === 0) {
           await this.updateCursor(evt.time_us)
           i = 0
         }
@@ -78,8 +79,11 @@ export class JetstreamFirehoseSubscription {
     return res?.cursor
   }
 }
-function isJetstreamCommit(v: unknown): v is JetstreamEventKindCommit {
-  return isObj(v) && 'kind' in v && v.kind === 'commit'
+function isJetstreamEvent(v: unknown): v is JetstreamEvent {
+  return isObj(v) && 'kind' in v
+}
+export function isJetstreamCommit(v: JetstreamEvent): v is JetstreamEventKindCommit {
+  return v.kind === 'commit'
 }
 
 export type JetstreamEvent = JetstreamEventKindCommit | JetstreamEventKindIdentity | JetstreamEventKindAccount
@@ -207,7 +211,7 @@ function encodeQueryParam(value: unknown): string | string[] {
   throw new Error(`Cannot encode ${typeof value}s into query params`)
 }
 
-const getJetstreamOpsByType = (evt: JetstreamEventKindCommit): OperationsByType => {
+export const getJetstreamOpsByType = (evt: JetstreamEventKindCommit, hydrated_metadata?: TurbostreamEventHydratedMetadata): OperationsByType => {
   const opsByType: OperationsByType = {
     posts: { creates: [], deletes: [] },
     reposts: { creates: [], deletes: [] },
@@ -221,7 +225,7 @@ const getJetstreamOpsByType = (evt: JetstreamEventKindCommit): OperationsByType 
 
   if (evt.commit.operation === 'create') {
     const record = jsonBlobRefToBlobRef(evt.commit.record)
-    const create = { uri, cid: evt.commit.cid, author: evt.did }
+    const create = { uri, cid: evt.commit.cid, author: evt.did, hydrated_metadata }
     if (evt.commit.collection === ids.AppBskyFeedPost && isPost(record)) {
       opsByType.posts.creates.push({ record, ...create })
     } else if (evt.commit.collection === ids.AppBskyFeedRepost && isRepost(record)) {

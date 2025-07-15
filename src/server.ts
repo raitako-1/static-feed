@@ -5,23 +5,24 @@ import { DidResolver, MemoryCache } from '@atproto/identity'
 import { createServer } from './lexicon'
 import feedGeneration from './methods/feed-generation'
 import describeGenerator from './methods/describe-generator'
-import { createDb, Database, migrateToLatest } from './db'
+import { createDb, type Database, migrateToLatest } from './db'
 import { FirehoseSubscription } from './util/subscription'
 import { JetstreamFirehoseSubscription } from './util/jetstream-subscription'
-import { AppContext, Config } from './config'
+import { TurbostreamFirehoseSubscription } from './util/turbostream-subscription'
+import { type AppContext, type Config } from './config'
 import wellKnown from './well-known'
 
 export class FeedGenerator {
   public app: express.Application
   public server?: http.Server
   public db: Database
-  public firehose: FirehoseSubscription | JetstreamFirehoseSubscription
+  public firehose: FirehoseSubscription | JetstreamFirehoseSubscription | TurbostreamFirehoseSubscription
   public cfg: Config
 
   constructor(
     app: express.Application,
     db: Database,
-    firehose: FirehoseSubscription | JetstreamFirehoseSubscription,
+    firehose: FirehoseSubscription | JetstreamFirehoseSubscription | TurbostreamFirehoseSubscription,
     cfg: Config,
   ) {
     this.app = app
@@ -63,6 +64,9 @@ export class FeedGenerator {
       return new FeedGenerator(app, db, firehose, cfg)
     } else if (cfg.subscriptionMode === 'Jetstream') {
       const firehose = new JetstreamFirehoseSubscription(db, cfg.subscriptionJetstreamEndpoint)
+      return new FeedGenerator(app, db, firehose, cfg)
+    } else if (cfg.subscriptionMode === 'Turbostream') {
+      const firehose = new TurbostreamFirehoseSubscription(db, cfg.subscriptionTurbostreamEndpoint)
       return new FeedGenerator(app, db, firehose, cfg)
     } else {
       throw new Error('Invalid FEEDGEN_SUBSCRIPTION_MODE')

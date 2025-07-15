@@ -1,5 +1,5 @@
-import { OperationsByType } from './util/subscription'
-import { Database } from './db'
+import { type OperationsByType } from './util/subscription'
+import { type Database } from './db'
 
 export const handleOperation = async (ops: OperationsByType, db: Database): Promise<void> => {
   // This logs the text of every post off the firehose.

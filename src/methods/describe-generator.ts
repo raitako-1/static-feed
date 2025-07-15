@@ -1,5 +1,5 @@
 import { Server } from '../lexicon'
-import { AppContext } from '../config'
+import { type AppContext } from '../config'
 import algos from '../algos'
 import { AtUri } from '@atproto/syntax'
 

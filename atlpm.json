@@ -1,9 +1,11 @@
 {
-  "apiType": "TSServer",
+  "apiTypes": {
+    "TSServer": "./src/lexicon"
+  },
   "schemaDir": "./lexicons",
-  "outDir": "./src/lexicon",
   "lexicons": {
     "app.bsky.feed.describeFeedGenerator": "github",
+    "app.bsky.feed.generator": "github",
     "app.bsky.feed.getFeedSkeleton": "github",
     "app.bsky.feed.like": "github",
     "app.bsky.feed.post": "github",

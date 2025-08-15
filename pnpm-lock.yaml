@@ -64,8 +64,8 @@ importers:
         specifier: ^8.18.1
         version: 8.18.1
       atlpm:
-        specifier: ^3.1.0
-        version: 3.1.0(@types/node@20.19.11)
+        specifier: ^3.1.1
+        version: 3.1.1(@types/node@20.19.11)
       inquirer:
         specifier: ^12.9.2
         version: 12.9.2(@types/node@20.19.11)
@@ -436,8 +436,8 @@ packages:
   array-flatten@1.1.1:
     resolution: {integrity: sha512-PCVAQswWemu6UdxsDFFX/+gVeYqKAod3D3UVm91jHwynguOwAvYPhx8nNlM++NqRcK6CxxpUafjmhIdKiHibqg==}
 
-  atlpm@3.1.0:
-    resolution: {integrity: sha512-Oq0qibktIDXyAx+hxpwtVxyB/6ocQWseeeq4BBDMb1iWvyCMo02LTPzwp9lbHEMtXC4cSn9rBrEGhJei6veHBA==}
+  atlpm@3.1.1:
+    resolution: {integrity: sha512-TN1Exq9lzK+5pvxsH8kYs37/BbE3vI8HmgMvSbl48y8msHKnEvFonFQE4mkau9gZzkiSr4uIa32IMzUgYvkNUA==}
     engines: {node: '>= 18.7.0'}
     hasBin: true
 
@@ -1675,7 +1675,7 @@ snapshots:
 
   array-flatten@1.1.1: {}
 
-  atlpm@3.1.0(@types/node@20.19.11):
+  atlpm@3.1.1(@types/node@20.19.11):
     dependencies:
       '@atproto/api': 0.16.2
       '@atproto/common': 0.4.11

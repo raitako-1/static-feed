@@ -1,5 +1,5 @@
 import { type QueryParams } from '../lexicon/types/app/bsky/feed/getFeedSkeleton'
-import { type AppContext } from '../config'
+import { type AppContext } from '../util/config'
 
 // max 15 chars
 export const shortname = 'whats-alf'

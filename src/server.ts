@@ -1,44 +1,68 @@
-import http from 'http'
+import { Ingester } from 'atingester'
 import events from 'events'
 import express from 'express'
-import { DidResolver, MemoryCache } from '@atproto/identity'
+import http from 'http'
+import { IdResolver } from '@atproto/identity'
+import { createDb, migrateToLatest } from './db'
 import { createServer } from './lexicon'
-import feedGeneration from './methods/feed-generation'
+import { ids } from './lexicon/lexicons'
 import describeGenerator from './methods/describe-generator'
-import { createDb, type Database, migrateToLatest } from './db'
-import { FirehoseSubscription } from './util/subscription'
-import { JetstreamFirehoseSubscription } from './util/jetstream-subscription'
-import { TurbostreamFirehoseSubscription } from './util/turbostream-subscription'
-import { type AppContext, type Config } from './config'
+import feedGeneration from './methods/feed-generation'
+import { handleEvent } from './subscription'
+import { type AppContext, env } from './util/config'
+import { createLogger } from './util/logger'
 import wellKnown from './well-known'
 
 export class FeedGenerator {
   public app: express.Application
   public server?: http.Server
-  public db: Database
-  public firehose: FirehoseSubscription | JetstreamFirehoseSubscription | TurbostreamFirehoseSubscription
-  public cfg: Config
+  public ctx: AppContext
+  public ingester: Ingester
 
   constructor(
     app: express.Application,
-    db: Database,
-    firehose: FirehoseSubscription | JetstreamFirehoseSubscription | TurbostreamFirehoseSubscription,
-    cfg: Config,
+    ctx: AppContext,
+    ingester: Ingester
   ) {
     this.app = app
-    this.db = db
-    this.firehose = firehose
-    this.cfg = cfg
+    this.ctx = ctx
+    this.ingester = ingester
   }
 
-  static create(cfg: Config) {
-    const app = express()
-    const db = createDb(cfg.sqliteLocation)
+  static async create() {
+    const logger = createLogger(['Runner', 'Server'])
+    logger.info('Creating server...')
 
-    const didCache = new MemoryCache()
-    const didResolver = new DidResolver({
-      plcUrl: 'https://plc.directory',
-      didCache,
+    logger.info(`Creating DB => ${env.FEEDGEN_SQLITE_LOCATION}`)
+    const db = createDb()
+
+    const app = express()
+    const idResolver = new IdResolver()
+
+    const ingesterLogger = createLogger(['Runner', 'Server', 'Ingester'])
+    const ingester = new Ingester(env.FEEDGEN_SUBSCRIPTION_MODE, {
+      idResolver,
+      handleEvent: async (evt) => handleEvent(evt, db),
+      onInfo: ingesterLogger.info,
+      onError: (err: Error) => ingesterLogger.error(err.message),
+      getCursor: async () => {
+        const res = await db
+          .selectFrom('sub_state')
+          .selectAll()
+          .where('service', '=', env[`FEEDGEN_SUBSCRIPTION_${env.FEEDGEN_SUBSCRIPTION_MODE.toUpperCase()}_ENDPOINT`])
+          .executeTakeFirst()
+        return res?.cursor
+      },
+      service: env[`FEEDGEN_SUBSCRIPTION_${env.FEEDGEN_SUBSCRIPTION_MODE.toUpperCase()}_ENDPOINT`],
+      subscriptionReconnectDelay: env.FEEDGEN_SUBSCRIPTION_RECONNECT_DELAY,
+      unauthenticatedCommits: true,
+      unauthenticatedHandles: true,
+      compress: true,
+      filterCollections: [ids.AppBskyFeedPost],
+      excludeIdentity: true,
+      excludeAccount: true,
+      excludeCommit: false,
+      excludeSync: true,
     })
 
     const server = createServer({
@@ -51,34 +75,37 @@ export class FeedGenerator {
     })
     const ctx: AppContext = {
       db,
-      didResolver,
-      cfg,
+      didResolver: idResolver.did,
+      logger,
     }
     feedGeneration(server, ctx)
-    describeGenerator(server, ctx)
+    describeGenerator(server)
     app.use(server.xrpc.router)
-    app.use(wellKnown(ctx))
+    app.use(wellKnown())
+    
+    logger.info('Server has been created!')
 
-    if (cfg.subscriptionMode === 'Firehose') {
-      const firehose = new FirehoseSubscription(db, cfg.subscriptionFirehoseEndpoint)
-      return new FeedGenerator(app, db, firehose, cfg)
-    } else if (cfg.subscriptionMode === 'Jetstream') {
-      const firehose = new JetstreamFirehoseSubscription(db, cfg.subscriptionJetstreamEndpoint)
-      return new FeedGenerator(app, db, firehose, cfg)
-    } else if (cfg.subscriptionMode === 'Turbostream') {
-      const firehose = new TurbostreamFirehoseSubscription(db, cfg.subscriptionTurbostreamEndpoint)
-      return new FeedGenerator(app, db, firehose, cfg)
-    } else {
-      throw new Error('Invalid FEEDGEN_SUBSCRIPTION_MODE')
-    }
+    return new FeedGenerator(app, ctx, ingester)
   }
 
-  async start(): Promise<http.Server> {
-    await migrateToLatest(this.db)
-    this.firehose.run(this.cfg.subscriptionReconnectDelay)
-    this.server = this.app.listen(this.cfg.port, this.cfg.listenhost)
+  async start() {
+    this.ctx.logger.info('Starting server...')
+    await migrateToLatest(this.ctx.db)
+    this.ingester.start()
+    this.server = this.app.listen(env.FEEDGEN_PORT, env.FEEDGEN_LISTENHOST)
     await events.once(this.server, 'listening')
-    return this.server
+    this.ctx.logger.info('Server started')
+  }
+
+  async stop() {
+    this.ctx.logger.info('Stopping server...')
+    await this.ingester.destroy()
+    return new Promise<void>((resolve) => {
+      this.server?.close(() => {
+        this.ctx.logger.info('Server stopped')
+        resolve()
+      })
+    })
   }
 }
 

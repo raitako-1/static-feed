@@ -1,21 +1,22 @@
-import { Server } from '../lexicon'
-import { type AppContext } from '../config'
 import algos from '../algos'
+import { Server } from '../lexicon'
+import { ids } from '../lexicon/lexicons'
+import { env } from '../util/config'
 import { AtUri } from '@atproto/syntax'
 
-export default function (server: Server, ctx: AppContext) {
+export default function (server: Server) {
   server.app.bsky.feed.describeFeedGenerator(async () => {
     const feeds = Object.keys(algos).map((shortname) => ({
       uri: AtUri.make(
-        ctx.cfg.publisherDid,
-        'app.bsky.feed.generator',
+        env.FEEDGEN_PUBLISHER_DID,
+        ids.AppBskyFeedGenerator,
         shortname,
       ).toString(),
     }))
     return {
       encoding: 'application/json',
       body: {
-        did: ctx.cfg.serviceDid,
+        did: env.FEEDGEN_SERVICE_DID,
         feeds,
       },
     }

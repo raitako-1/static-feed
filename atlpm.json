@@ -10,7 +10,6 @@
     "app.bsky.feed.like": "pds",
     "app.bsky.feed.post": "pds",
     "app.bsky.feed.repost": "pds",
-    "app.bsky.graph.follow": "pds",
-    "com.atproto.sync.subscribeRepos": "pds"
+    "app.bsky.graph.follow": "pds"
   }
 }

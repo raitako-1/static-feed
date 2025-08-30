@@ -49,7 +49,7 @@ export class FeedGenerator {
         const res = await db
           .selectFrom('sub_state')
           .selectAll()
-          .where('service', '=', env[`FEEDGEN_SUBSCRIPTION_${env.FEEDGEN_SUBSCRIPTION_MODE.toUpperCase()}_ENDPOINT`])
+          .where('service', '=', `${env.FEEDGEN_SUBSCRIPTION_MODE}:` + env[`FEEDGEN_SUBSCRIPTION_${env.FEEDGEN_SUBSCRIPTION_MODE.toUpperCase()}_ENDPOINT`])
           .executeTakeFirst()
         return res?.cursor
       },

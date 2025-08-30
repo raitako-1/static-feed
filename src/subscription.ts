@@ -6,9 +6,37 @@ import { Record as PostRecord } from './lexicon/types/app/bsky/feed/post'
 import { Record as RepostRecord } from './lexicon/types/app/bsky/feed/repost'
 import { Record as LikeRecord } from './lexicon/types/app/bsky/feed/like'
 import { Record as FollowRecord } from './lexicon/types/app/bsky/graph/follow'
+import { env } from './util/config'
 
+let i = 0
 
 export const handleEvent = async (evt: IngesterEvent, db: Database): Promise<void> => {
+  const updateCursor = async (cursor: number) => {
+    await db
+      .insertInto('sub_state')
+      .values({
+        service: `${env.FEEDGEN_SUBSCRIPTION_MODE}:` + env[`FEEDGEN_SUBSCRIPTION_${env.FEEDGEN_SUBSCRIPTION_MODE.toUpperCase()}_ENDPOINT`],
+        cursor,
+      })
+      .onConflict((oc) => oc
+        .column('service')
+        .where('service', '=', `${env.FEEDGEN_SUBSCRIPTION_MODE}:` + env[`FEEDGEN_SUBSCRIPTION_${env.FEEDGEN_SUBSCRIPTION_MODE.toUpperCase()}_ENDPOINT`])
+        .doUpdateSet({
+          cursor: (eb) => eb.ref('excluded.cursor')
+        })
+      )
+      .execute()
+  }
+
+  i++
+  if (evt.event === 'create' || evt.event === 'update' || evt.event === 'delete') {
+    if ('seq' in evt && evt.seq % 20 === 0) {
+      await updateCursor(evt.seq)
+    } else if ('time_us' in evt && i % 20 === 0) {
+      await updateCursor(evt.time_us)
+    }
+  }
+
   // This logs the text of every post off the firehose.
   // Just for fun :)
   // Delete before actually using
@@ -36,6 +64,8 @@ export const handleEvent = async (evt: IngesterEvent, db: Database): Promise<voi
     } else if (evt.collection === ids.AppBskyGraphFollow && isFollow(evt.record)) {
     }
   }
+
+  if (evt.event === 'update') {} // updates not supported yet
 
   if (evt.event === 'delete') {
     if (evt.collection === ids.AppBskyFeedPost) {

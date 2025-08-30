@@ -9,7 +9,6 @@ export const setupCmd = (server: FeedGenerator, logger: Logger) => {
     const cmd = (data.toString()).split(' ').map(v => v.trim()).filter(v => v !== '')
     for (let i = cmd.length; i > 0; i--) {
       const fullPath = path.join(__dirname, `../cmds/${cmd.slice(0, i).join('/')}${path.parse(__filename).ext}`)
-      console.log(fullPath)
       if (fs.existsSync(fullPath)) {
         const event = (await import(fullPath)).default as (server: FeedGenerator, logger: Logger, args: string[]) => Promise<void>
         await event(server, createLogger(['Runner', 'Commander'].concat(cmd.slice(0, i))), cmd.slice(i))

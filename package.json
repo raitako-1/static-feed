@@ -22,7 +22,7 @@
     "@atproto/lexicon": "^0.4.14",
     "@atproto/syntax": "^0.4.1",
     "@atproto/xrpc-server": "^0.9.4",
-    "atingester": "^0.0.6",
+    "atingester": "^0.0.7",
     "better-sqlite3": "^11.10.0",
     "dotenv": "^16.6.1",
     "envalid": "^8.1.0",

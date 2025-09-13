@@ -42,7 +42,7 @@ export class FeedGenerator {
     const ingesterLogger = createLogger(['Runner', 'Server', 'Ingester'])
     const ingester = new Ingester(env.FEEDGEN_SUBSCRIPTION_MODE, {
       idResolver,
-      handleEvent: async (evt) => handleEvent(evt, db),
+      handleEvent: async (evt) => await handleEvent(evt, db),
       onInfo: ingesterLogger.info,
       onError: (err: Error) => ingesterLogger.error(err.message),
       getCursor: async () => {
@@ -55,8 +55,8 @@ export class FeedGenerator {
       },
       service: env[`FEEDGEN_SUBSCRIPTION_${env.FEEDGEN_SUBSCRIPTION_MODE.toUpperCase()}_ENDPOINT`],
       subscriptionReconnectDelay: env.FEEDGEN_SUBSCRIPTION_RECONNECT_DELAY,
-      unauthenticatedCommits: true,
-      unauthenticatedHandles: true,
+      unauthenticatedCommits: false,
+      unauthenticatedHandles: false,
       compress: true,
       filterCollections: [ids.AppBskyFeedPost],
       excludeIdentity: true,

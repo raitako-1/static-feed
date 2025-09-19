@@ -115,6 +115,13 @@ const fixBlobRefs = (obj: unknown): unknown => {
       const blob = obj as BlobRef
       return new BlobRef(blob.ref, blob.mimeType, blob.size, blob.original)
     }
+    if ('$type' in obj && obj.$type === 'blob') {
+      if ('ref' in obj && obj.ref && typeof obj.ref === 'object' && '$link' in obj.ref && typeof obj.ref.$link === 'string') {
+        obj.ref = CID.parse(obj.ref.$link)
+      }
+      const json = obj as JsonBlobRef
+      return BlobRef.fromJsonRef(json)
+    }
     return Object.entries(obj).reduce((acc, [key, val]) => {
       return Object.assign(acc, { [key]: fixBlobRefs(val) })
     }, {} as Record<string, unknown>)

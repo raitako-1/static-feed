@@ -1,6 +1,5 @@
 console.log('Starting...')
 
-import { initIngester } from 'atingester'
 import { closeSignal } from './cmds/stop'
 import FeedGenerator from './server'
 import { setupCmd } from './util/cmd'
@@ -13,9 +12,7 @@ const run = async () => {
   logger.info(`System Info: Node.js ${process.version} / ${process.platform} ${process.arch}`)
   logger.debug('DebugMode is enabled.')
 
-  await initIngester()
-
-  const server = await FeedGenerator.create()
+  const server = FeedGenerator.create()
 
   await server.start()
 

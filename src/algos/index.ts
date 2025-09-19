@@ -3,12 +3,12 @@ import {
   type OutputSchema as AlgoOutput,
 } from '../lexicon/types/app/bsky/feed/getFeedSkeleton'
 import { type AppContext } from '../util/config'
-import * as whatsAlf from './whats-alf'
+import * as example from './example'
 
 type AlgoHandler = (ctx: AppContext, params: QueryParams) => Promise<AlgoOutput>
 
 const algos: Record<string, AlgoHandler> = {
-  [whatsAlf.shortname]: whatsAlf.handler,
+  [example.shortname]: example.handler,
 }
 
 export default algos

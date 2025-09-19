@@ -1,5 +1,6 @@
 import { IngesterEvent } from 'atingester'
-import { BlobRef } from '@atproto/lexicon'
+import { CID } from 'multiformats/cid'
+import { BlobRef, JsonBlobRef } from '@atproto/lexicon'
 import { type Database } from './db'
 import { ids, lexicons } from './lexicon/lexicons'
 import { Record as PostRecord } from './lexicon/types/app/bsky/feed/post'
